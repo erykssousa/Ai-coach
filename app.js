@@ -26,6 +26,44 @@ function mosaico(rotulo, valor, unidade, semDado) {
   return caixa;
 }
 
+function mostrarPlano(plano) {
+  const caixa = $("plano");
+  if (!plano || !plano.sessoes.length) {
+    caixa.append(el("p", "discreto", "Ainda não há plano aprovado para esta semana."));
+    return;
+  }
+  const hoje = new Date().toLocaleDateString("sv-SE"); // AAAA-MM-DD na hora local
+  const porDia = new Map();
+  for (const s of plano.sessoes) {
+    const dia = s.inicio.slice(0, 10);
+    if (!porDia.has(dia)) porDia.set(dia, []);
+    porDia.get(dia).push(s);
+  }
+  for (const [dia, sessoes] of porDia) {
+    const bloco = el("div", dia === hoje ? "dia hoje" : "dia");
+    const nome = new Date(`${dia}T12:00:00`).toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "numeric" });
+    bloco.append(el("p", "dia-nome", dia === hoje ? `Hoje, ${nome}` : nome));
+    for (const s of sessoes) {
+      const cartao = el("div", "sessao");
+      const detalhes = el("details");
+      const topo = el("summary");
+      const esquerda = el("div");
+      // A IA repete muitas vezes a modalidade no título ("Ginásio - Core").
+      const titulo = s.titulo.replace(new RegExp(`^${s.modalidade}\\s*[-–:]?\\s*`, "i"), "") || s.titulo;
+      esquerda.append(el("div", null, `${s.modalidade}: ${titulo}`),el("div", "hora", `${s.inicio.slice(11, 16)} · ${s.intensidade}`));
+      const medidas = [s.km ? `${numero(s.km)} km` : null, `${s.minutos} min`].filter(Boolean).join(" · ");
+      topo.append(esquerda, el("div", "medidas", medidas));
+      const lista = el("ul");
+      for (const linha of s.detalhe) lista.append(el("li", null, linha));
+      detalhes.append(topo, lista);
+      if (dia === hoje) detalhes.open = true;
+      cartao.append(detalhes);
+      bloco.append(cartao);
+    }
+    caixa.append(bloco);
+  }
+}
+
 function mostrarHoje(saude) {
   // O dia mais recente com algum dado do relógio (hoje pode ainda não ter sincronizado).
   const comDados = [...saude].reverse().find((d) => d.fc_repouso !== null || d.stress !== null);
@@ -225,6 +263,7 @@ async function arrancar() {
     const painel = await obterPainel();
     const sync = painel.ultimo_sync ? `${dataCurta(painel.ultimo_sync)} às ${painel.ultimo_sync.slice(11, 16)}` : "nunca";
     $("sync").textContent = `Última sincronização com o Garmin: ${sync}`;
+    mostrarPlano(painel.plano);
     mostrarHoje(painel.saude);
     mostrarGrafico(painel.saude);
     mostrarSemana(painel.semana);

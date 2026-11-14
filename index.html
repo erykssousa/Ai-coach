@@ -5,16 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#14161a" media="(prefers-color-scheme: dark)">
-<title>AI Coach — Saúde</title>
+<title>AI Coach</title>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
 <header class="topo">
-  <h1>Saúde</h1>
+  <h1>AI Coach</h1>
   <p id="sync" class="discreto">A carregar…</p>
 </header>
 
 <main id="conteudo" hidden>
+  <section aria-labelledby="t-plano">
+    <h2 id="t-plano">Plano da semana</h2>
+    <div id="plano"></div>
+  </section>
+
   <section aria-labelledby="t-hoje">
     <h2 id="t-hoje">Hoje</h2>
     <div id="hoje" class="grelha"></div>

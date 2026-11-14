@@ -99,6 +99,20 @@ th, td { text-align: left; padding: 4px 0; border-bottom: 1px solid var(--linha)
 .atividade .quando { color: var(--tinta-3); font-size: 0.8rem; }
 .atividade .medidas { color: var(--tinta-2); font-size: 0.88rem; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
+.dia { margin-top: 14px; }
+.dia:first-child { margin-top: 0; }
+.dia-nome { font-size: 0.8rem; color: var(--tinta-3); margin: 0 0 6px; text-transform: capitalize; }
+.dia.hoje .dia-nome { color: var(--tinta); font-weight: 650; }
+.sessao { background: var(--superficie); border: 1px solid var(--linha); border-radius: 14px; margin-top: 8px; }
+.dia.hoje .sessao { border-color: var(--serie); }
+.sessao summary { list-style: none; padding: 12px 14px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; color: var(--tinta); }
+.sessao summary::-webkit-details-marker { display: none; }
+.sessao .hora { color: var(--tinta-3); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.sessao .medidas { color: var(--tinta-2); font-size: 0.88rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sessao ul { margin: 0; padding: 0 14px 12px 32px; color: var(--tinta-2); font-size: 0.9rem; }
+.sessao li { margin-top: 4px; }
+.sessao details { margin: 0; }
+
 #acesso { margin-top: 24px; }
 #acesso h2 { margin-top: 0; color: var(--tinta); font-size: 1.1rem; }
 #acesso label { display: block; margin: 14px 0 4px; font-size: 0.88rem; color: var(--tinta-2); }
