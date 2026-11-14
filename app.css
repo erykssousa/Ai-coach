@@ -1,0 +1,106 @@
+:root {
+  --fundo: #f6f7f9;
+  --superficie: #ffffff;
+  --tinta: #15181d;
+  --tinta-2: #4a5260;
+  --tinta-3: #6d7584;
+  --linha: #e3e6eb;
+  --serie: #2f6fd0;      /* única série de dados */
+  --trilho: #e6e9ee;
+  --aviso-fundo: #fff4d6;
+  --aviso-tinta: #6b4e00;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #14161a;
+    --superficie: #1d2026;
+    --tinta: #eef0f3;
+    --tinta-2: #b9c0cb;
+    --tinta-3: #8e96a3;
+    --linha: #2c313a;
+    --serie: #6aa3f5;
+    --trilho: #2c313a;
+    --aviso-fundo: #3a3013;
+    --aviso-tinta: #f1d98a;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0 16px 40px;
+  background: var(--fundo);
+  color: var(--tinta);
+  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  max-width: 640px;
+  margin-inline: auto;
+}
+.topo { padding: 20px 0 4px; }
+h1 { margin: 0; font-size: 1.6rem; }
+h2 { margin: 28px 0 10px; font-size: 0.95rem; font-weight: 600; color: var(--tinta-2); }
+.discreto { margin: 2px 0 0; color: var(--tinta-3); font-size: 0.85rem; }
+
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 14px;
+  padding: 14px;
+}
+.grelha { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media (min-width: 480px) { .grelha { grid-template-columns: repeat(3, 1fr); } }
+.mosaico { background: var(--superficie); border: 1px solid var(--linha); border-radius: 14px; padding: 12px 14px; }
+.mosaico .rotulo { color: var(--tinta-3); font-size: 0.8rem; }
+.mosaico .valor { font-size: 1.7rem; font-weight: 650; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.mosaico .valor small { font-size: 0.85rem; font-weight: 500; color: var(--tinta-2); }
+.mosaico .vazio { font-size: 1rem; font-weight: 500; color: var(--tinta-3); padding: 8px 0 6px; }
+
+.nota {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--aviso-fundo);
+  color: var(--aviso-tinta);
+  font-size: 0.88rem;
+}
+
+.grafico { position: relative; }
+.grafico svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
+.grafico .eixo { fill: var(--tinta-3); font-size: 20px; }
+.grafico .linha { stroke-width: 3.5; }
+.grafico .grade { stroke: var(--linha); stroke-width: 1; }
+.grafico .linha { fill: none; stroke: var(--serie); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.grafico .ponto { fill: var(--serie); stroke: var(--superficie); stroke-width: 2; }
+.grafico .mira { stroke: var(--tinta-3); stroke-width: 1; stroke-dasharray: 3 3; }
+.dica {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  background: var(--tinta);
+  color: var(--fundo);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+details { margin-top: 10px; font-size: 0.88rem; color: var(--tinta-2); }
+summary { cursor: pointer; }
+table { width: 100%; border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 4px 0; border-bottom: 1px solid var(--linha); }
+
+.lista > * + * { border-top: 1px solid var(--linha); margin-top: 12px; padding-top: 12px; }
+.meta-topo { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.meta-topo .numeros { color: var(--tinta-2); font-size: 0.88rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.trilho { height: 8px; background: var(--trilho); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+.trilho > div { height: 100%; background: var(--serie); border-radius: 4px; }
+.meta-fundo { margin-top: 4px; color: var(--tinta-3); font-size: 0.8rem; }
+
+.atividade { display: flex; justify-content: space-between; gap: 12px; }
+.atividade .quando { color: var(--tinta-3); font-size: 0.8rem; }
+.atividade .medidas { color: var(--tinta-2); font-size: 0.88rem; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.zonas-titulo { font-weight: 600; margin: 0 0 6px; }
+.zonas-titulo + .discreto { margin-bottom: 8px; }
+.zona { display: flex; justify-content: space-between; padding: 3px 0; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+.zona span:first-child { color: var(--tinta-2); }
+#zonas > div + div { border-top: 1px solid var(--linha); margin-top: 12px; padding-top: 12px; }

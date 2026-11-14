@@ -1,0 +1,199 @@
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+const el = (tag, classe, texto) => {
+  const no = document.createElement(tag);
+  if (classe) no.className = classe;
+  if (texto !== undefined) no.textContent = texto;
+  return no;
+};
+const dataCurta = (iso) => {
+  const [, mes, dia] = iso.slice(0, 10).split("-");
+  return `${Number(dia)}/${Number(mes)}`;
+};
+const numero = (valor) => String(valor).replace(".", ",");
+
+function mosaico(rotulo, valor, unidade, semDado) {
+  const caixa = el("div", "mosaico");
+  caixa.append(el("div", "rotulo", rotulo));
+  if (valor === null || valor === undefined) {
+    caixa.append(el("div", "vazio", semDado));
+  } else {
+    const linha = el("div", "valor", numero(valor));
+    if (unidade) linha.append(" ", el("small", null, unidade));
+    caixa.append(linha);
+  }
+  return caixa;
+}
+
+function mostrarHoje(saude) {
+  // O dia mais recente com algum dado do relógio (hoje pode ainda não ter sincronizado).
+  const comDados = [...saude].reverse().find((d) => d.fc_repouso !== null || d.stress !== null);
+  const dia = comDados || saude[saude.length - 1];
+  $("t-hoje").textContent = dia.dia === saude[saude.length - 1].dia ? "Hoje" : `Último dia com dados (${dataCurta(dia.dia)})`;
+  $("hoje").append(
+    mosaico("FC de repouso", dia.fc_repouso, "bpm", "sem dados"),
+    mosaico("Body Battery máx.", dia.body_battery_max, null, "sem dados"),
+    mosaico("Stress médio", dia.stress, null, "sem dados"),
+    mosaico("Sono", dia.sono_horas, "h", "sem relógio"),
+    mosaico("HRV da noite", dia.hrv, "ms", "sem relógio"),
+    mosaico("Readiness", dia.readiness, null, "sem sono"),
+  );
+  if (dia.sono_horas === null) {
+    const aviso = $("aviso-relogio");
+    aviso.textContent = "Sem sono nem HRV: o relógio não foi usado durante a noite. O treinador decide pelo check-in.";
+    aviso.hidden = false;
+  }
+}
+
+function mostrarGrafico(saude) {
+  const pontos = saude.map((d, i) => ({ i, dia: d.dia, v: d.fc_repouso })).filter((p) => p.v !== null);
+  const corpo = $("tabela-fc").querySelector("tbody");
+  for (const d of saude) {
+    const linha = el("tr");
+    linha.append(el("td", null, dataCurta(d.dia)), el("td", null, d.fc_repouso === null ? "—" : `${d.fc_repouso} bpm`));
+    corpo.append(linha);
+  }
+  const caixa = $("grafico");
+  if (pontos.length < 2) {
+    caixa.append(el("p", "discreto", "Ainda não há dias suficientes com FC de repouso."));
+    return;
+  }
+
+  // O desenho é reduzido para caber no telemóvel (~340 px), por isso as
+  // medidas internas são generosas: o texto dos eixos fica com ~11 px no ecrã.
+  const L = 600, A = 260, m = { e: 52, d: 14, c: 20, b: 40 };
+  const valores = pontos.map((p) => p.v);
+  const min = Math.floor((Math.min(...valores) - 2) / 5) * 5;
+  const max = Math.ceil((Math.max(...valores) + 2) / 5) * 5;
+  const x = (i) => m.e + (i / (saude.length - 1)) * (L - m.e - m.d);
+  const y = (v) => m.c + (1 - (v - min) / (max - min)) * (A - m.c - m.b);
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${L} ${A}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `FC de repouso nos últimos 30 dias, entre ${Math.min(...valores)} e ${Math.max(...valores)} bpm`);
+  const no = (nome, atributos, texto) => {
+    const n = document.createElementNS(ns, nome);
+    for (const [k, v] of Object.entries(atributos)) n.setAttribute(k, v);
+    if (texto !== undefined) n.textContent = texto;
+    svg.append(n);
+    return n;
+  };
+
+  for (let v = min; v <= max; v += Math.max(5, Math.round((max - min) / 4 / 5) * 5)) {
+    no("line", { class: "grade", x1: m.e, x2: L - m.d, y1: y(v), y2: y(v) });
+    no("text", { class: "eixo", x: m.e - 10, y: y(v) + 7, "text-anchor": "end" }, v);
+  }
+  for (const i of [0, Math.round((saude.length - 1) / 2), saude.length - 1]) {
+    no("text", { class: "eixo", x: x(i), y: A - 6, "text-anchor": i === 0 ? "start" : i === saude.length - 1 ? "end" : "middle" }, dataCurta(saude[i].dia));
+  }
+
+  // Dias sem dados interrompem a linha: não se inventa um valor entre eles.
+  let troco = [];
+  const trocos = [];
+  for (const p of pontos) {
+    if (troco.length && p.i !== troco[troco.length - 1].i + 1) { trocos.push(troco); troco = []; }
+    troco.push(p);
+  }
+  trocos.push(troco);
+  for (const t of trocos) {
+    if (t.length === 1) no("circle", { class: "ponto", cx: x(t[0].i), cy: y(t[0].v), r: 4 });
+    else no("path", { class: "linha", d: t.map((p, k) => `${k ? "L" : "M"}${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ") });
+  }
+
+  const mira = no("line", { class: "mira", y1: m.c, y2: A - m.b, visibility: "hidden" });
+  const marca = no("circle", { class: "ponto", r: 5, visibility: "hidden" });
+  const dica = el("div", "dica");
+  dica.hidden = true;
+  caixa.append(svg, dica);
+
+  const apontar = (evento) => {
+    const caixaSvg = svg.getBoundingClientRect();
+    const px = ((evento.clientX - caixaSvg.left) / caixaSvg.width) * L;
+    const perto = pontos.reduce((a, b) => (Math.abs(x(b.i) - px) < Math.abs(x(a.i) - px) ? b : a));
+    mira.setAttribute("x1", x(perto.i)); mira.setAttribute("x2", x(perto.i)); mira.setAttribute("visibility", "visible");
+    marca.setAttribute("cx", x(perto.i)); marca.setAttribute("cy", y(perto.v)); marca.setAttribute("visibility", "visible");
+    dica.textContent = `${dataCurta(perto.dia)}: ${perto.v} bpm`;
+    dica.hidden = false;
+    const meio = (x(perto.i) / L) * caixaSvg.width;
+    dica.style.left = `${Math.min(Math.max(meio, 50), caixaSvg.width - 50)}px`;
+  };
+  const sair = () => { mira.setAttribute("visibility", "hidden"); marca.setAttribute("visibility", "hidden"); dica.hidden = true; };
+  svg.addEventListener("pointermove", apontar);
+  svg.addEventListener("pointerdown", apontar);
+  svg.addEventListener("pointerleave", sair);
+}
+
+function mostrarSemana(semana) {
+  for (const s of semana) {
+    const bloco = el("div");
+    const topo = el("div", "meta-topo");
+    topo.append(el("strong", null, s.modalidade), el("span", "numeros", `${numero(s.feito)} de ${numero(s.alvo)} ${s.unidade}`));
+    const trilho = el("div", "trilho");
+    const barra = el("div");
+    barra.style.width = `${Math.min(100, s.alvo ? (s.feito / s.alvo) * 100 : 0)}%`;
+    trilho.append(barra);
+    trilho.setAttribute("role", "progressbar");
+    trilho.setAttribute("aria-valuenow", s.feito);
+    trilho.setAttribute("aria-valuemin", 0);
+    trilho.setAttribute("aria-valuemax", s.alvo);
+    trilho.setAttribute("aria-label", `${s.modalidade}: ${s.feito} de ${s.alvo} ${s.unidade}`);
+    bloco.append(topo, trilho, el("div", "meta-fundo", `Objetivo: ${numero(s.objetivo)} ${s.unidade} por semana`));
+    $("semana").append(bloco);
+  }
+}
+
+function mostrarAtividades(atividades) {
+  if (!atividades.length) { $("atividades").append(el("p", "discreto", "Sem atividades registadas.")); return; }
+  for (const a of atividades) {
+    const linha = el("div", "atividade");
+    const esquerda = el("div");
+    esquerda.append(el("div", null, a.modalidade), el("div", "quando", `${dataCurta(a.inicio)} às ${a.inicio.slice(11, 16)}`));
+    const partes = [];
+    if (a.km) partes.push(`${numero(a.km)} km`);
+    if (a.minutos) partes.push(`${a.minutos} min`);
+    if (a.fc_media) partes.push(`${a.fc_media} bpm`);
+    linha.append(esquerda, el("div", "medidas", partes.join(" · ")));
+    $("atividades").append(linha);
+  }
+}
+
+function mostrarZonas(zonas) {
+  if (!zonas) { $("zonas").append(el("p", "discreto", "Zonas ainda não calculadas.")); return; }
+  for (const [chave, nome] of [["corrida", "Corrida"], ["ciclismo", "Ciclismo"]]) {
+    const bloco = el("div");
+    bloco.append(el("p", "zonas-titulo", `${nome} — limiar ${zonas[chave].fc_limiar} bpm`));
+    if (zonas[chave].origem.startsWith("estimativa")) bloco.append(el("p", "discreto", "Estimativa, por confirmar com um teste."));
+    for (const [z, dados] of Object.entries(zonas[chave].zonas)) {
+      const linha = el("div", "zona");
+      linha.append(el("span", null, `${z.toUpperCase()} ${dados.nome}`), el("span", null, `${dados.min}–${dados.max} bpm`));
+      bloco.append(linha);
+    }
+    $("zonas").append(bloco);
+  }
+  const natacao = el("div");
+  natacao.append(el("p", "zonas-titulo", "Natação"), el("p", "discreto", `Sem zonas de FC. Ritmo típico: ${zonas.natacao.ritmo_tipico_min_100m} por 100 m.`));
+  $("zonas").append(natacao);
+}
+
+async function arrancar() {
+  try {
+    const resposta = await fetch("dados/painel.json", { cache: "no-store" });
+    if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+    const painel = await resposta.json();
+    const sync = painel.ultimo_sync ? `${dataCurta(painel.ultimo_sync)} às ${painel.ultimo_sync.slice(11, 16)}` : "nunca";
+    $("sync").textContent = `Última sincronização com o Garmin: ${sync}`;
+    mostrarHoje(painel.saude);
+    mostrarGrafico(painel.saude);
+    mostrarSemana(painel.semana);
+    mostrarAtividades(painel.atividades);
+    mostrarZonas(painel.zonas);
+    $("conteudo").hidden = false;
+  } catch (erro) {
+    $("sync").textContent = "";
+    $("erro").textContent = `Não foi possível carregar os dados (${erro.message}).`;
+    $("erro").hidden = false;
+  }
+}
+arrancar();

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161a" media="(prefers-color-scheme: dark)">
+<title>AI Coach — Saúde</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="topo">
+  <h1>Saúde</h1>
+  <p id="sync" class="discreto">A carregar…</p>
+</header>
+
+<main id="conteudo" hidden>
+  <section aria-labelledby="t-hoje">
+    <h2 id="t-hoje">Hoje</h2>
+    <div id="hoje" class="grelha"></div>
+    <p id="aviso-relogio" class="nota" hidden></p>
+  </section>
+
+  <section aria-labelledby="t-fc">
+    <h2 id="t-fc">FC de repouso, últimos 30 dias</h2>
+    <div class="cartao">
+      <div id="grafico" class="grafico"></div>
+      <details>
+        <summary>Ver como tabela</summary>
+        <table id="tabela-fc"><thead><tr><th>Dia</th><th>FC de repouso</th></tr></thead><tbody></tbody></table>
+      </details>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-semana">
+    <h2 id="t-semana">Esta semana</h2>
+    <div id="semana" class="cartao lista"></div>
+  </section>
+
+  <section aria-labelledby="t-ativ">
+    <h2 id="t-ativ">Últimas atividades</h2>
+    <div id="atividades" class="cartao lista"></div>
+  </section>
+
+  <section aria-labelledby="t-zonas">
+    <h2 id="t-zonas">Zonas de FC</h2>
+    <div id="zonas" class="cartao"></div>
+  </section>
+</main>
+
+<p id="erro" class="nota" hidden></p>
+<script src="app.js"></script>
+</body>
+</html>
