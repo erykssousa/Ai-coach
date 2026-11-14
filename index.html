@@ -48,7 +48,18 @@
   </section>
 </main>
 
-<p id="erro" class="nota" hidden></p>
+<form id="acesso" class="cartao" hidden>
+  <h2>Chave de acesso</h2>
+  <p class="discreto">Cola a chave do GitHub criada para esta app. Fica guardada só neste browser e serve para ler os teus dados no repositório privado.</p>
+  <p id="erro" class="nota" hidden></p>
+  <label for="chave">Chave</label>
+  <input id="chave" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+  <button type="submit">Entrar</button>
+</form>
+
+<footer id="rodape" hidden>
+  <button id="sair" type="button" class="ligacao">Esquecer a chave neste telemóvel</button>
+</footer>
 <script src="app.js"></script>
 </body>
 </html>

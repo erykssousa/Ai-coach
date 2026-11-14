@@ -177,11 +177,52 @@ function mostrarZonas(zonas) {
   $("zonas").append(natacao);
 }
 
-async function arrancar() {
-  try {
+// Os dados vivem no ramo "dados" do repositório privado. Esta página é pública
+// e não traz dado nenhum: lê-os com a chave de acesso guardada neste browser.
+const REPOSITORIO = "erykssousa/AI-TRI";
+const URL_PAINEL = `https://api.github.com/repos/${REPOSITORIO}/contents/painel.json?ref=dados`;
+const GUARDADA = "aitri_chave";
+// No PC, em desenvolvimento, lê-se o ficheiro local (?remoto=1 força o modo real).
+const LOCAL = ["localhost", "127.0.0.1"].includes(location.hostname) && !new URLSearchParams(location.search).has("remoto");
+
+class SemAcesso extends Error {}
+
+function lerChave() {
+  try { return localStorage.getItem(GUARDADA); } catch { return null; }
+}
+
+async function obterPainel() {
+  if (LOCAL) {
     const resposta = await fetch("dados/painel.json", { cache: "no-store" });
     if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
-    const painel = await resposta.json();
+    return resposta.json();
+  }
+  const chave = lerChave();
+  if (!chave) throw new SemAcesso("");
+  const resposta = await fetch(URL_PAINEL, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${chave}`, Accept: "application/vnd.github.raw+json", "X-GitHub-Api-Version": "2022-11-28" },
+  });
+  if (resposta.status === 401) throw new SemAcesso("A chave não é válida ou expirou. Cria uma nova e cola-a aqui.");
+  if (resposta.status === 403 || resposta.status === 404) {
+    throw new SemAcesso("A chave não dá acesso aos dados. Confirma que é só para o repositório AI-TRI, com permissão de leitura em Contents, e que o sync já correu.");
+  }
+  if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+  return resposta.json();
+}
+
+function pedirChave(mensagem) {
+  $("sync").textContent = "";
+  $("conteudo").hidden = true;
+  $("rodape").hidden = true;
+  $("erro").textContent = mensagem;
+  $("erro").hidden = !mensagem;
+  $("acesso").hidden = false;
+}
+
+async function arrancar() {
+  try {
+    const painel = await obterPainel();
     const sync = painel.ultimo_sync ? `${dataCurta(painel.ultimo_sync)} às ${painel.ultimo_sync.slice(11, 16)}` : "nunca";
     $("sync").textContent = `Última sincronização com o Garmin: ${sync}`;
     mostrarHoje(painel.saude);
@@ -189,11 +230,30 @@ async function arrancar() {
     mostrarSemana(painel.semana);
     mostrarAtividades(painel.atividades);
     mostrarZonas(painel.zonas);
+    $("acesso").hidden = true;
     $("conteudo").hidden = false;
+    $("rodape").hidden = LOCAL;
   } catch (erro) {
-    $("sync").textContent = "";
-    $("erro").textContent = `Não foi possível carregar os dados (${erro.message}).`;
-    $("erro").hidden = false;
+    if (erro instanceof SemAcesso) { pedirChave(erro.message); return; }
+    $("sync").textContent = `Não foi possível carregar os dados (${erro.message}). Verifica a ligação à internet.`;
   }
 }
+
+$("acesso").addEventListener("submit", (evento) => {
+  evento.preventDefault();
+  try {
+    localStorage.setItem(GUARDADA, $("chave").value.trim());
+  } catch {
+    pedirChave("Este browser não deixa guardar a chave (modo privado?).");
+    return;
+  }
+  $("chave").value = "";
+  $("sync").textContent = "A carregar…";
+  arrancar();
+});
+$("sair").addEventListener("click", () => {
+  try { localStorage.removeItem(GUARDADA); } catch { /* nada a remover */ }
+  location.reload();
+});
+
 arrancar();

@@ -99,6 +99,32 @@ th, td { text-align: left; padding: 4px 0; border-bottom: 1px solid var(--linha)
 .atividade .quando { color: var(--tinta-3); font-size: 0.8rem; }
 .atividade .medidas { color: var(--tinta-2); font-size: 0.88rem; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
+#acesso { margin-top: 24px; }
+#acesso h2 { margin-top: 0; color: var(--tinta); font-size: 1.1rem; }
+#acesso label { display: block; margin: 14px 0 4px; font-size: 0.88rem; color: var(--tinta-2); }
+#acesso input {
+  width: 100%;
+  padding: 12px;
+  font: inherit;
+  color: var(--tinta);
+  background: var(--fundo);
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+}
+#acesso button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: #2f6fd0;
+  border: 0;
+  border-radius: 10px;
+}
+footer { margin-top: 32px; text-align: center; }
+.ligacao { background: none; border: 0; padding: 8px; font: inherit; font-size: 0.85rem; color: var(--tinta-3); text-decoration: underline; }
+
 .zonas-titulo { font-weight: 600; margin: 0 0 6px; }
 .zonas-titulo + .discreto { margin-bottom: 8px; }
 .zona { display: flex; justify-content: space-between; padding: 3px 0; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
