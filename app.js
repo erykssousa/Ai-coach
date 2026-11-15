@@ -26,8 +26,7 @@ function mosaico(rotulo, valor, unidade, semDado) {
   return caixa;
 }
 
-function mostrarPlano(plano) {
-  const caixa = $("plano");
+function mostrarPlano(plano, caixa = $("plano")) {
   if (!plano || !plano.sessoes.length) {
     caixa.append(el("p", "discreto", "Ainda não há plano aprovado para esta semana."));
     return;
@@ -266,7 +265,26 @@ const ESPERA_MS = 8000;
 const ESPERA_MAXIMA_MS = 5 * 60 * 1000;
 let ocupado = false;
 
-const assinatura = (conversa) => JSON.stringify((conversa || []).map((m) => [m.id, m.estado]));
+// Muda sempre que uma ação teve efeito: mensagem nova, proposta decidida,
+// plano proposto ou aprovado.
+const assinatura = (painel) => JSON.stringify([
+  (painel.conversa || []).map((m) => [m.id, m.estado]),
+  painel.proposta_plano ? [painel.proposta_plano.semana, painel.proposta_plano.sessoes.map((s) => s.id + s.minutos)] : null,
+  painel.plano ? [painel.plano.semana, painel.plano.sessoes.length] : null,
+]);
+
+function mostrarProposta(proposta) {
+  $("s-proposta").hidden = !proposta;
+  if (!proposta) return;
+  const segunda = new Date(`${proposta.semana}T12:00:00`);
+  $("t-proposta").textContent = `Plano proposto para a semana de ${segunda.getDate()}/${segunda.getMonth() + 1}`;
+  $("proposta-notas").textContent = proposta.notas;
+  $("proposta-alvos").textContent = `Alvos: ${proposta.alvos.join(" · ")}`;
+  mostrarPlano(proposta, $("proposta"));
+}
+
+$("plano-aprovar").addEventListener("click", () => agir({ tipo: "plano_aprovar" }, "A enviar o plano para o relógio e o calendário (um a dois minutos)…"));
+$("plano-outro").addEventListener("click", () => agir({ tipo: "plano_propor" }, "O treinador está a desenhar outro plano (dois a três minutos)…"));
 
 function mostrarConversa(conversa) {
   const caixa = $("conversa");
@@ -297,7 +315,7 @@ function mostrarConversa(conversa) {
 
 function bloquear(sim) {
   ocupado = sim;
-  for (const botao of document.querySelectorAll("#chat button, .proposta button")) botao.disabled = sim;
+  for (const botao of document.querySelectorAll("#chat button, .decisao button")) botao.disabled = sim;
   $("mensagem").disabled = sim;
 }
 
@@ -306,7 +324,7 @@ async function agir(inputs, aviso) {
   if (LOCAL) { $("estado-chat").textContent = "No PC o chat está desligado: só funciona na app publicada."; return; }
   bloquear(true);
   $("estado-chat").textContent = aviso;
-  const antes = assinatura(ultimoPainel.conversa);
+  const antes = assinatura(ultimoPainel);
   try {
     const resposta = await fetch(URL_ACAO, {
       method: "POST",
@@ -322,7 +340,7 @@ async function agir(inputs, aviso) {
     while (Date.now() < limite) {
       await new Promise((r) => setTimeout(r, ESPERA_MS));
       const painel = await obterPainel().catch(() => null);
-      if (painel && assinatura(painel.conversa) !== antes) {
+      if (painel && assinatura(painel) !== antes) {
         desenhar(painel);
         $("estado-chat").textContent = "";
         if (inputs.tipo === "mensagem") $("mensagem").value = "";
@@ -350,12 +368,13 @@ let ultimoPainel = {};
 
 function desenhar(painel) {
   ultimoPainel = painel;
-  for (const id of ["plano", "conversa", "hoje", "grafico", "semana", "atividades", "zonas"]) $(id).replaceChildren();
+  for (const id of ["plano", "proposta", "conversa", "hoje", "grafico", "semana", "atividades", "zonas"]) $(id).replaceChildren();
   $("tabela-fc").querySelector("tbody").replaceChildren();
   $("aviso-relogio").hidden = true;
   const sync = painel.ultimo_sync ? `${dataCurta(painel.ultimo_sync)} às ${painel.ultimo_sync.slice(11, 16)}` : "nunca";
   $("sync").textContent = `Última sincronização com o Garmin: ${sync}`;
   mostrarPlano(painel.plano);
+  mostrarProposta(painel.proposta_plano);
   mostrarConversa(painel.conversa);
   mostrarHoje(painel.saude);
   mostrarGrafico(painel.saude);
