@@ -113,6 +113,32 @@ th, td { text-align: left; padding: 4px 0; border-bottom: 1px solid var(--linha)
 .sessao li { margin-top: 4px; }
 .sessao details { margin: 0; }
 
+.so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.conversa { display: flex; flex-direction: column; gap: 8px; }
+.conversa:empty { display: none; }
+.balao { max-width: 88%; padding: 9px 12px; border-radius: 14px; font-size: 0.94rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.balao.eryk { align-self: flex-end; background: var(--serie); color: #fff; border-bottom-right-radius: 4px; }
+.balao.treinador { align-self: flex-start; background: var(--fundo); border: 1px solid var(--linha); border-bottom-left-radius: 4px; }
+.proposta { align-self: stretch; border: 1px solid var(--serie); border-radius: 12px; padding: 10px 12px; font-size: 0.92rem; }
+.proposta ul { margin: 6px 0 0; padding-left: 20px; }
+.proposta .decisao { display: flex; gap: 8px; margin-top: 10px; }
+.proposta button, #chat button {
+  flex: 1; padding: 11px; font: inherit; font-weight: 600; border-radius: 10px; border: 1px solid var(--linha);
+  background: var(--superficie); color: var(--tinta);
+}
+.proposta button.principal, #chat button { background: #2f6fd0; border-color: #2f6fd0; color: #fff; }
+button:disabled { opacity: 0.55; }
+.proposta .feito { margin: 8px 0 0; color: var(--tinta-3); font-size: 0.85rem; }
+#chat { display: flex; gap: 8px; align-items: flex-end; margin-top: 12px; }
+.conversa:empty + #chat { margin-top: 0; }
+#chat textarea {
+  flex: 1; min-width: 0; padding: 10px 12px; font: inherit; color: var(--tinta); background: var(--fundo);
+  border: 1px solid var(--linha); border-radius: 10px; resize: vertical;
+}
+#chat button { flex: 0 0 auto; padding: 11px 16px; }
+#estado-chat { margin-top: 8px; }
+#estado-chat:empty { display: none; }
+
 #acesso { margin-top: 24px; }
 #acesso h2 { margin-top: 0; color: var(--tinta); font-size: 1.1rem; }
 #acesso label { display: block; margin: 14px 0 4px; font-size: 0.88rem; color: var(--tinta-2); }

@@ -258,17 +258,116 @@ function pedirChave(mensagem) {
   $("acesso").hidden = false;
 }
 
+// ---- Chat -------------------------------------------------------------
+// Cada mensagem ou decisão dispara um workflow no repositório privado. A
+// resposta chega quando o workflow publica um painel novo (cerca de um minuto).
+const URL_ACAO = `https://api.github.com/repos/${REPOSITORIO}/actions/workflows/acao.yml/dispatches`;
+const ESPERA_MS = 8000;
+const ESPERA_MAXIMA_MS = 5 * 60 * 1000;
+let ocupado = false;
+
+const assinatura = (conversa) => JSON.stringify((conversa || []).map((m) => [m.id, m.estado]));
+
+function mostrarConversa(conversa) {
+  const caixa = $("conversa");
+  for (const m of conversa || []) {
+    caixa.append(el("div", `balao ${m.autor}`, m.texto));
+    if (!m.alteracoes.length) continue;
+    const proposta = el("div", "proposta");
+    proposta.append(el("strong", null, "Alterações propostas"));
+    const lista = el("ul");
+    for (const a of m.alteracoes) lista.append(el("li", null, a));
+    proposta.append(lista);
+    if (m.estado === "pendente") {
+      const decisao = el("div", "decisao");
+      const sim = el("button", "principal", "Aprovar");
+      const nao = el("button", null, "Rejeitar");
+      sim.type = nao.type = "button";
+      sim.addEventListener("click", () => agir({ tipo: "aprovar", id: String(m.id) }, "A aplicar no relógio e no calendário…"));
+      nao.addEventListener("click", () => agir({ tipo: "rejeitar", id: String(m.id) }, "A registar…"));
+      decisao.append(sim, nao);
+      proposta.append(decisao);
+    } else {
+      const rotulos = { aprovada: "Aprovada e aplicada.", rejeitada: "Rejeitada.", falhou: "Não foi aplicada por completo." };
+      proposta.append(el("p", "feito", rotulos[m.estado] || ""));
+    }
+    caixa.append(proposta);
+  }
+}
+
+function bloquear(sim) {
+  ocupado = sim;
+  for (const botao of document.querySelectorAll("#chat button, .proposta button")) botao.disabled = sim;
+  $("mensagem").disabled = sim;
+}
+
+async function agir(inputs, aviso) {
+  if (ocupado) return;
+  if (LOCAL) { $("estado-chat").textContent = "No PC o chat está desligado: só funciona na app publicada."; return; }
+  bloquear(true);
+  $("estado-chat").textContent = aviso;
+  const antes = assinatura(ultimoPainel.conversa);
+  try {
+    const resposta = await fetch(URL_ACAO, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${lerChave()}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
+      body: JSON.stringify({ ref: "main", inputs }),
+    });
+    if (resposta.status === 403 || resposta.status === 404) {
+      throw new Error("a chave não tem permissão para pedir ações (falta 'Actions: Read and write')");
+    }
+    if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+
+    const limite = Date.now() + ESPERA_MAXIMA_MS;
+    while (Date.now() < limite) {
+      await new Promise((r) => setTimeout(r, ESPERA_MS));
+      const painel = await obterPainel().catch(() => null);
+      if (painel && assinatura(painel.conversa) !== antes) {
+        desenhar(painel);
+        $("estado-chat").textContent = "";
+        if (inputs.tipo === "mensagem") $("mensagem").value = "";
+        return;
+      }
+    }
+    $("estado-chat").textContent = "Ainda sem resposta. Atualiza a página daqui a um minuto.";
+  } catch (erro) {
+    $("estado-chat").textContent = `Não foi possível enviar: ${erro.message}.`;
+  } finally {
+    bloquear(false);
+  }
+}
+
+$("chat").addEventListener("submit", (evento) => {
+  evento.preventDefault();
+  const texto = $("mensagem").value.trim();
+  if (!texto || ocupado) return;
+  if (!LOCAL) $("conversa").append(el("div", "balao eryk", texto));
+  agir({ tipo: "mensagem", texto }, "O treinador está a responder (cerca de um minuto)…");
+});
+
+// ---- Arranque ---------------------------------------------------------
+let ultimoPainel = {};
+
+function desenhar(painel) {
+  ultimoPainel = painel;
+  for (const id of ["plano", "conversa", "hoje", "grafico", "semana", "atividades", "zonas"]) $(id).replaceChildren();
+  $("tabela-fc").querySelector("tbody").replaceChildren();
+  $("aviso-relogio").hidden = true;
+  const sync = painel.ultimo_sync ? `${dataCurta(painel.ultimo_sync)} às ${painel.ultimo_sync.slice(11, 16)}` : "nunca";
+  $("sync").textContent = `Última sincronização com o Garmin: ${sync}`;
+  mostrarPlano(painel.plano);
+  mostrarConversa(painel.conversa);
+  mostrarHoje(painel.saude);
+  mostrarGrafico(painel.saude);
+  mostrarSemana(painel.semana);
+  mostrarAtividades(painel.atividades);
+  mostrarZonas(painel.zonas);
+}
+
 async function arrancar() {
   try {
     const painel = await obterPainel();
-    const sync = painel.ultimo_sync ? `${dataCurta(painel.ultimo_sync)} às ${painel.ultimo_sync.slice(11, 16)}` : "nunca";
-    $("sync").textContent = `Última sincronização com o Garmin: ${sync}`;
-    mostrarPlano(painel.plano);
-    mostrarHoje(painel.saude);
-    mostrarGrafico(painel.saude);
-    mostrarSemana(painel.semana);
-    mostrarAtividades(painel.atividades);
-    mostrarZonas(painel.zonas);
+    desenhar(painel);
     $("acesso").hidden = true;
     $("conteudo").hidden = false;
     $("rodape").hidden = LOCAL;

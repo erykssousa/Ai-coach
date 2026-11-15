@@ -15,6 +15,19 @@
 </header>
 
 <main id="conteudo" hidden>
+  <section aria-labelledby="t-chat">
+    <h2 id="t-chat">Treinador</h2>
+    <div class="cartao">
+      <div id="conversa" class="conversa" aria-live="polite"></div>
+      <form id="chat">
+        <label for="mensagem" class="so-leitor">Mensagem para o treinador</label>
+        <textarea id="mensagem" rows="2" maxlength="1000" placeholder="Por exemplo: hoje estou com pressa, reduz o treino" required></textarea>
+        <button type="submit" id="enviar">Enviar</button>
+      </form>
+      <p id="estado-chat" class="discreto" role="status"></p>
+    </div>
+  </section>
+
   <section aria-labelledby="t-plano">
     <h2 id="t-plano">Plano da semana</h2>
     <div id="plano"></div>
