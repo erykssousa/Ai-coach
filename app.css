@@ -113,6 +113,22 @@ th, td { text-align: left; padding: 4px 0; border-bottom: 1px solid var(--linha)
 .sessao li { margin-top: 4px; }
 .sessao details { margin: 0; }
 
+.campo { border: 0; padding: 0; margin: 0 0 14px; min-width: 0; }
+.campo label, .campo legend { display: block; padding: 0; margin-bottom: 6px; font-size: 0.88rem; color: var(--tinta-2); }
+.campo input, .campo select {
+  width: 100%; padding: 11px 12px; font: inherit; color: var(--tinta); background: var(--fundo);
+  border: 1px solid var(--linha); border-radius: 10px;
+}
+.campo input[hidden] { display: none; }
+.campo select + input { margin-top: 8px; }
+.escala .opcoes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.escala label { margin: 0; text-align: center; padding: 10px 0; border: 1px solid var(--linha); border-radius: 10px; color: var(--tinta); background: var(--fundo); }
+.escala input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.escala input:checked + label { background: var(--serie); border-color: var(--serie); color: #fff; font-weight: 650; }
+.escala input:focus-visible + label { outline: 2px solid var(--tinta); outline-offset: 2px; }
+.escala .extremos { display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.75rem; color: var(--tinta-3); }
+#checkin button { width: 100%; padding: 12px; font: inherit; font-weight: 600; color: #fff; background: #2f6fd0; border: 0; border-radius: 10px; }
+
 .so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .conversa { display: flex; flex-direction: column; gap: 8px; }
 .conversa:empty { display: none; }

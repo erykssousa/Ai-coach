@@ -15,6 +15,42 @@
 </header>
 
 <main id="conteudo" hidden>
+  <section id="s-checkin" aria-labelledby="t-checkin" hidden>
+    <h2 id="t-checkin">Check-in de hoje</h2>
+    <form id="checkin" class="cartao">
+      <div id="campo-sono" class="campo">
+        <label for="c-sono">Quantas horas dormiste?</label>
+        <input id="c-sono" type="number" inputmode="decimal" min="0" max="16" step="0.5" placeholder="por exemplo 7">
+      </div>
+      <fieldset class="campo escala" data-nome="sono_qualidade"><legend>Qualidade do sono</legend></fieldset>
+      <fieldset class="campo escala" data-nome="energia"><legend>Energia</legend></fieldset>
+      <fieldset class="campo escala" data-nome="motivacao"><legend>Motivação</legend></fieldset>
+      <div class="campo">
+        <label for="c-dores">Dores musculares</label>
+        <select id="c-dores">
+          <option value="nenhumas">Nenhumas</option>
+          <option value="ligeiras">Ligeiras</option>
+          <option value="fortes">Fortes</option>
+        </select>
+        <input id="c-dores-onde" type="text" maxlength="200" placeholder="Onde?" hidden>
+      </div>
+      <div class="campo">
+        <label for="c-tempo">Tempo para treinar hoje</label>
+        <select id="c-tempo">
+          <option value="normal">O normal</option>
+          <option value="menos">Menos do que o normal</option>
+          <option value="nenhum">Nenhum</option>
+        </select>
+        <input id="c-minutos" type="number" inputmode="numeric" min="0" max="600" step="5" placeholder="Quantos minutos?" hidden>
+      </div>
+      <div class="campo">
+        <label for="c-sem-relogio">Treinaste sem relógio desde ontem?</label>
+        <input id="c-sem-relogio" type="text" maxlength="300" placeholder="Opcional: o quê e quanto">
+      </div>
+      <button type="submit" class="principal">Enviar check-in</button>
+    </form>
+  </section>
+
   <section aria-labelledby="t-chat">
     <h2 id="t-chat">Treinador</h2>
     <div class="cartao">

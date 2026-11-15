@@ -315,7 +315,7 @@ function mostrarConversa(conversa) {
 
 function bloquear(sim) {
   ocupado = sim;
-  for (const botao of document.querySelectorAll("#chat button, .decisao button")) botao.disabled = sim;
+  for (const botao of document.querySelectorAll("#chat button, .decisao button, #checkin button")) botao.disabled = sim;
   $("mensagem").disabled = sim;
 }
 
@@ -363,6 +363,52 @@ $("chat").addEventListener("submit", (evento) => {
   agir({ tipo: "mensagem", texto }, "O treinador está a responder (cerca de um minuto)…");
 });
 
+// ---- Check-in ---------------------------------------------------------
+for (const grupo of document.querySelectorAll(".escala")) {
+  const opcoes = el("div", "opcoes");
+  for (let n = 1; n <= 5; n += 1) {
+    const entrada = el("input");
+    entrada.type = "radio";
+    entrada.name = grupo.dataset.nome;
+    entrada.value = n;
+    entrada.id = `${grupo.dataset.nome}-${n}`;
+    entrada.required = true;
+    const rotulo = el("label", null, String(n));
+    rotulo.htmlFor = entrada.id;
+    opcoes.append(entrada, rotulo);
+  }
+  const extremos = el("div", "extremos");
+  extremos.append(el("span", null, "má"), el("span", null, "ótima"));
+  grupo.append(opcoes, extremos);
+}
+$("c-dores").addEventListener("change", () => { $("c-dores-onde").hidden = $("c-dores").value === "nenhumas"; });
+$("c-tempo").addEventListener("change", () => { $("c-minutos").hidden = $("c-tempo").value !== "menos"; });
+
+function mostrarCheckin(painel) {
+  $("s-checkin").hidden = Boolean(painel.checkin_feito);
+  // Só se pergunta pelas horas de sono se o relógio não as tiver.
+  const hoje = painel.saude[painel.saude.length - 1];
+  $("campo-sono").hidden = hoje.sono_horas !== null;
+}
+
+$("checkin").addEventListener("submit", (evento) => {
+  evento.preventDefault();
+  const escolhido = (nome) => Number(document.querySelector(`input[name="${nome}"]:checked`).value);
+  const respostas = {
+    sono_horas: $("campo-sono").hidden || $("c-sono").value === "" ? null : Number($("c-sono").value),
+    sono_qualidade: escolhido("sono_qualidade"),
+    energia: escolhido("energia"),
+    motivacao: escolhido("motivacao"),
+    dores: $("c-dores").value,
+    dores_onde: $("c-dores").value === "nenhumas" ? "" : $("c-dores-onde").value,
+    tempo: $("c-tempo").value,
+    tempo_minutos: $("c-tempo").value === "menos" && $("c-minutos").value !== "" ? Number($("c-minutos").value) : null,
+    treinos_sem_relogio: $("c-sem-relogio").value,
+  };
+  agir({ tipo: "checkin", texto: JSON.stringify(respostas) }, "Check-in enviado. O treinador está a ver o teu dia (cerca de um minuto)…");
+  $("t-chat").scrollIntoView({ behavior: "smooth" });
+});
+
 // ---- Arranque ---------------------------------------------------------
 let ultimoPainel = {};
 
@@ -373,6 +419,7 @@ function desenhar(painel) {
   $("aviso-relogio").hidden = true;
   const sync = painel.ultimo_sync ? `${dataCurta(painel.ultimo_sync)} às ${painel.ultimo_sync.slice(11, 16)}` : "nunca";
   $("sync").textContent = `Última sincronização com o Garmin: ${sync}`;
+  mostrarCheckin(painel);
   mostrarPlano(painel.plano);
   mostrarProposta(painel.proposta_plano);
   mostrarConversa(painel.conversa);
