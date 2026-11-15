@@ -2,118 +2,139 @@
 <html lang="pt-PT">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#14161a" media="(prefers-color-scheme: dark)">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f5f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
 <title>AI Coach</title>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
 <header class="topo">
-  <h1>AI Coach</h1>
+  <h1 id="titulo">AI Coach</h1>
   <p id="sync" class="discreto">A carregar…</p>
 </header>
 
 <main id="conteudo" hidden>
-  <section id="s-checkin" aria-labelledby="t-checkin" hidden>
-    <h2 id="t-checkin">Check-in de hoje</h2>
-    <form id="checkin" class="cartao">
-      <div id="campo-sono" class="campo">
-        <label for="c-sono">Quantas horas dormiste?</label>
-        <input id="c-sono" type="number" inputmode="decimal" min="0" max="16" step="0.5" placeholder="por exemplo 7">
-      </div>
-      <fieldset class="campo escala" data-nome="sono_qualidade"><legend>Qualidade do sono</legend></fieldset>
-      <fieldset class="campo escala" data-nome="energia"><legend>Energia</legend></fieldset>
-      <fieldset class="campo escala" data-nome="motivacao"><legend>Motivação</legend></fieldset>
-      <div class="campo">
-        <label for="c-dores">Dores musculares</label>
-        <select id="c-dores">
-          <option value="nenhumas">Nenhumas</option>
-          <option value="ligeiras">Ligeiras</option>
-          <option value="fortes">Fortes</option>
-        </select>
-        <input id="c-dores-onde" type="text" maxlength="200" placeholder="Onde?" hidden>
-      </div>
-      <div class="campo">
-        <label for="c-tempo">Tempo para treinar hoje</label>
-        <select id="c-tempo">
-          <option value="normal">O normal</option>
-          <option value="menos">Menos do que o normal</option>
-          <option value="nenhum">Nenhum</option>
-        </select>
-        <input id="c-minutos" type="number" inputmode="numeric" min="0" max="600" step="5" placeholder="Quantos minutos?" hidden>
-      </div>
-      <div class="campo">
-        <label for="c-sem-relogio">Treinaste sem relógio desde ontem?</label>
-        <input id="c-sem-relogio" type="text" maxlength="300" placeholder="Opcional: o quê e quanto">
-      </div>
-      <button type="submit" class="principal">Enviar check-in</button>
-    </form>
-  </section>
+  <!-- ===== Hoje ===== -->
+  <div class="vista" id="v-hoje">
+    <section id="s-alertas" hidden></section>
 
-  <section aria-labelledby="t-chat">
-    <h2 id="t-chat">Treinador</h2>
-    <div class="cartao">
-      <div id="conversa" class="conversa" aria-live="polite"></div>
-      <form id="chat">
-        <label for="mensagem" class="so-leitor">Mensagem para o treinador</label>
-        <textarea id="mensagem" rows="2" maxlength="1000" placeholder="Por exemplo: hoje estou com pressa, reduz o treino" required></textarea>
-        <button type="submit" id="enviar">Enviar</button>
+    <section id="s-checkin" aria-labelledby="t-checkin" hidden>
+      <h2 id="t-checkin">Check-in de hoje</h2>
+      <details class="cartao destaque recolhido">
+        <summary><span><strong>Como te sentes hoje?</strong><small>Responde em menos de um minuto</small></span></summary>
+      <form id="checkin">
+        <div id="campo-sono" class="campo">
+          <label for="c-sono">Quantas horas dormiste?</label>
+          <input id="c-sono" type="number" inputmode="decimal" min="0" max="16" step="0.5" placeholder="por exemplo 7">
+        </div>
+        <fieldset class="campo escala" data-nome="sono_qualidade"><legend>Qualidade do sono</legend></fieldset>
+        <fieldset class="campo escala" data-nome="energia"><legend>Energia</legend></fieldset>
+        <fieldset class="campo escala" data-nome="motivacao"><legend>Motivação</legend></fieldset>
+        <div class="campo">
+          <label for="c-dores">Dores musculares</label>
+          <select id="c-dores">
+            <option value="nenhumas">Nenhumas</option>
+            <option value="ligeiras">Ligeiras</option>
+            <option value="fortes">Fortes</option>
+          </select>
+          <input id="c-dores-onde" type="text" maxlength="200" placeholder="Onde?" hidden>
+        </div>
+        <div class="campo">
+          <label for="c-tempo">Tempo para treinar hoje</label>
+          <select id="c-tempo">
+            <option value="normal">O normal</option>
+            <option value="menos">Menos do que o normal</option>
+            <option value="nenhum">Nenhum</option>
+          </select>
+          <input id="c-minutos" type="number" inputmode="numeric" min="0" max="600" step="5" placeholder="Quantos minutos?" hidden>
+        </div>
+        <div class="campo">
+          <label for="c-sem-relogio">Treinaste sem relógio desde ontem?</label>
+          <input id="c-sem-relogio" type="text" maxlength="300" placeholder="Opcional: o quê e quanto">
+        </div>
+        <button type="submit" class="botao principal">Enviar check-in</button>
       </form>
-      <p id="estado-chat" class="discreto" role="status"></p>
-    </div>
-  </section>
-
-  <section id="s-proposta" aria-labelledby="t-proposta" hidden>
-    <h2 id="t-proposta">Plano proposto</h2>
-    <div class="cartao">
-      <p id="proposta-notas" class="discreto"></p>
-      <p id="proposta-alvos" class="discreto"></p>
-      <div class="decisao">
-        <button type="button" id="plano-aprovar" class="principal">Aprovar plano</button>
-        <button type="button" id="plano-outro">Pedir outro</button>
-      </div>
-    </div>
-    <div id="proposta"></div>
-  </section>
-
-  <section aria-labelledby="t-plano">
-    <h2 id="t-plano">Plano da semana</h2>
-    <div id="plano"></div>
-  </section>
-
-  <section aria-labelledby="t-hoje">
-    <h2 id="t-hoje">Hoje</h2>
-    <div id="hoje" class="grelha"></div>
-    <p id="aviso-relogio" class="nota" hidden></p>
-  </section>
-
-  <section aria-labelledby="t-fc">
-    <h2 id="t-fc">FC de repouso, últimos 30 dias</h2>
-    <div class="cartao">
-      <div id="grafico" class="grafico"></div>
-      <details>
-        <summary>Ver como tabela</summary>
-        <table id="tabela-fc"><thead><tr><th>Dia</th><th>FC de repouso</th></tr></thead><tbody></tbody></table>
       </details>
-    </div>
-  </section>
+    </section>
 
-  <section aria-labelledby="t-semana">
-    <h2 id="t-semana">Esta semana</h2>
-    <div id="semana" class="cartao lista"></div>
-  </section>
+    <section aria-labelledby="t-treinos-hoje">
+      <h2 id="t-treinos-hoje">Treinos de hoje</h2>
+      <div id="treinos-hoje"></div>
+    </section>
 
-  <section aria-labelledby="t-ativ">
-    <h2 id="t-ativ">Últimas atividades</h2>
-    <div id="atividades" class="cartao lista"></div>
-  </section>
+    <section aria-labelledby="t-estado">
+      <h2 id="t-estado">Como estás</h2>
+      <div id="hoje" class="grelha"></div>
+      <p id="aviso-relogio" class="nota" hidden></p>
+    </section>
 
-  <section aria-labelledby="t-zonas">
-    <h2 id="t-zonas">Zonas de FC</h2>
-    <div id="zonas" class="cartao"></div>
-  </section>
+    <section aria-labelledby="t-semana-resumo">
+      <h2 id="t-semana-resumo">Esta semana</h2>
+      <div id="semana-resumo" class="cartao lista"></div>
+    </section>
+  </div>
+
+  <!-- ===== Semana ===== -->
+  <div class="vista" id="v-semana" hidden>
+    <section id="s-proposta" aria-labelledby="t-proposta" hidden>
+      <h2 id="t-proposta">Plano proposto</h2>
+      <div class="cartao destaque">
+        <p id="proposta-notas"></p>
+        <p id="proposta-alvos" class="discreto"></p>
+        <div class="decisao">
+          <button type="button" id="plano-aprovar" class="botao principal">Aprovar plano</button>
+          <button type="button" id="plano-outro" class="botao">Pedir outro</button>
+        </div>
+      </div>
+      <div id="proposta"></div>
+    </section>
+
+    <section aria-labelledby="t-plano">
+      <h2 id="t-plano">Plano da semana</h2>
+      <div id="plano"></div>
+    </section>
+
+    <section aria-labelledby="t-atividades">
+      <h2 id="t-atividades">Últimas atividades</h2>
+      <div id="atividades" class="cartao lista"></div>
+    </section>
+  </div>
+
+  <!-- ===== Treinador ===== -->
+  <div class="vista" id="v-treinador" hidden>
+    <section aria-label="Conversa com o treinador">
+      <div class="cartao">
+        <div id="conversa" class="conversa" aria-live="polite"></div>
+        <p id="conversa-vazia" class="discreto">Escreve ao treinador para ajustar o plano. Ele propõe e tu aprovas.</p>
+        <form id="chat">
+          <label for="mensagem" class="so-leitor">Mensagem para o treinador</label>
+          <textarea id="mensagem" rows="2" maxlength="1000" placeholder="Por exemplo: hoje estou com pressa, reduz o treino" required></textarea>
+          <button type="submit" class="botao principal">Enviar</button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== Saúde ===== -->
+  <div class="vista" id="v-saude" hidden>
+    <section aria-labelledby="t-medias">
+      <h2 id="t-medias">Média dos últimos 7 dias</h2>
+      <div id="medias" class="grelha"></div>
+    </section>
+    <section aria-labelledby="t-graficos">
+      <h2 id="t-graficos">Últimos 30 dias</h2>
+      <div id="graficos"></div>
+    </section>
+    <section aria-labelledby="t-zonas">
+      <h2 id="t-zonas">Zonas de FC</h2>
+      <div id="zonas" class="cartao"></div>
+    </section>
+    <p class="rodape"><button id="sair" type="button" class="ligacao">Esquecer a chave neste telemóvel</button></p>
+  </div>
 </main>
+
+<p id="estado-acao" class="aviso-flutuante" role="status" hidden></p>
 
 <form id="acesso" class="cartao" hidden>
   <h2>Chave de acesso</h2>
@@ -121,12 +142,24 @@
   <p id="erro" class="nota" hidden></p>
   <label for="chave">Chave</label>
   <input id="chave" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required>
-  <button type="submit">Entrar</button>
+  <button type="submit" class="botao principal">Entrar</button>
 </form>
 
-<footer id="rodape" hidden>
-  <button id="sair" type="button" class="ligacao">Esquecer a chave neste telemóvel</button>
-</footer>
+<nav id="separadores" class="separadores" aria-label="Secções" hidden>
+  <button type="button" data-vista="hoje" aria-current="page">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5V20h-5.5v-5.5h-5V20H4z"/></svg><span>Hoje</span>
+  </button>
+  <button type="button" data-vista="semana">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4"/></svg><span>Semana</span><i class="marca" id="marca-semana" hidden></i>
+  </button>
+  <button type="button" data-vista="treinador">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H10l-4.5 4v-4H4z"/></svg><span>Treinador</span><i class="marca" id="marca-treinador" hidden></i>
+  </button>
+  <button type="button" data-vista="saude">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg><span>Saúde</span>
+  </button>
+</nav>
+
 <script src="app.js"></script>
 </body>
 </html>
