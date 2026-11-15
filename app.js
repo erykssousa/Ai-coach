@@ -52,6 +52,11 @@ function mostrarPlano(plano, caixa = $("plano")) {
       esquerda.append(el("div", null, `${s.modalidade}: ${titulo}`),el("div", "hora", `${s.inicio.slice(11, 16)} · ${s.intensidade}`));
       const medidas = [s.km ? `${numero(s.km)} km` : null, `${s.minutos} min`].filter(Boolean).join(" · ");
       topo.append(esquerda, el("div", "medidas", medidas));
+      if (s.estado === "feita" || s.estado === "nao_feita") {
+        const feito = [s.feito_km ? `${numero(s.feito_km)} km` : null, s.feito_min ? `${s.feito_min} min` : null].filter(Boolean).join(" · ");
+        const texto = s.estado === "feita" ? `✓ Feito${feito ? `: ${feito}` : ""}` : "✗ Não feito";
+        esquerda.append(el("div", `resultado ${s.estado}`, texto));
+      }
       const lista = el("ul");
       for (const linha of s.detalhe) lista.append(el("li", null, linha));
       detalhes.append(topo, lista);
