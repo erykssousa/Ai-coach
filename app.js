@@ -89,7 +89,25 @@ function cartaoSessao(s, aberta) {
   topo.append(esquerda, el("div", "medidas", medidas));
   const lista = el("ul");
   for (const linha of s.detalhe) lista.append(el("li", null, linha));
-  detalhes.append(topo, lista);
+  detalhes.append(topo);
+  if (s.analise) {
+    // Planeado vs. feito, calculado pelo código depois do sync.
+    const analise = el("div", "analise");
+    analise.append(el("p", "veredicto", s.analise.veredicto));
+    const quadro = el("table");
+    const cabeca = el("tr");
+    cabeca.append(el("th", null, ""), el("th", null, "Planeado"), el("th", null, "Feito"));
+    quadro.append(cabeca);
+    for (const linha of s.analise.linhas) {
+      const tr = el("tr");
+      tr.append(el("td", null, linha.rotulo), el("td", null, linha.planeado), el("td", null, linha.feito));
+      quadro.append(tr);
+    }
+    analise.append(quadro);
+    for (const nota of s.analise.notas) analise.append(el("p", "discreto", nota));
+    detalhes.append(analise, el("p", "sub", "O que estava planeado"));
+  }
+  detalhes.append(lista);
   detalhes.open = aberta;
   cartao.append(detalhes);
   return cartao;
@@ -99,6 +117,10 @@ function mostrarPlano(plano, caixa) {
   if (!plano || !plano.sessoes.length) {
     caixa.append(el("div", "cartao vazio-dia", "Ainda não há plano aprovado para esta semana."));
     return;
+  }
+  if (plano.cumprimento && (plano.cumprimento.feita || plano.cumprimento.nao_feita)) {
+    const c = plano.cumprimento;
+    caixa.append(el("p", "cumprimento", `${c.feita} feitos · ${c.nao_feita} não feitos · ${c.aprovada} por fazer`));
   }
   const hoje = hojeIso();
   const porDia = new Map();

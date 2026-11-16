@@ -137,6 +137,14 @@ button:disabled { opacity: 0.55; }
 .sessao .resultado.nao_feita { color: var(--tinta-3); font-weight: 500; }
 .sessao ul { margin: 0; padding: 0 14px 12px 32px; color: var(--tinta-2); font-size: 0.9rem; }
 .sessao li { margin-top: 4px; }
+.sessao .analise { margin: 0 14px 10px; padding: 10px 12px; background: var(--superficie-2); border-radius: 12px; font-size: 0.88rem; }
+.sessao .veredicto { margin: 0 0 6px; font-weight: 600; }
+.sessao .analise table { margin-top: 0; }
+.sessao .analise th { font-weight: 500; color: var(--tinta-3); font-size: 0.78rem; }
+.sessao .analise td:first-child { color: var(--tinta-2); }
+.sessao .analise .discreto { margin-top: 8px; }
+.sessao .sub { margin: 0 14px 2px; font-size: 0.78rem; color: var(--tinta-3); }
+.cumprimento { margin: 0 0 12px; font-size: 0.9rem; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
 .vazio-dia { padding: 18px 14px; text-align: center; color: var(--tinta-3); }
 
 /* ---- Progresso da semana ---- */
